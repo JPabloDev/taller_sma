@@ -1,0 +1,30 @@
+Respuestas del Funcionamiento del Sistema Multiagente
+
+1.¿Cómo decide un agente libre qué tarea tomar?
+
+-Primero intenta ayudar tareas casi terminadas (≥75% y sin asignado).
+-Luego toma tareas grandes (totalWork > 150) si coincide su habilidad.
+-Después retoma tareas abandonadas en progreso.
+-Luego elige tareas que coinciden con sus habilidades, ordenadas por prioridad y menor totalWork.
+-Si es Fullstack, puede tomar cualquier tarea pendiente siguiendo prioridad.
+
+2.¿Cómo se evita que dos agentes tomen la misma tarea?
+
+-El mecanismo es implícito.
+-Cuando un agente toma una tarea, se marca como IN_PROGRESS y se le asigna un assignedTo.
+-Otros agentes ya no la consideran disponible porque solo buscan tareas PENDING o sin asignado.
+-No se usan bloqueos ni semáforos; la asignación inmediata evita conflictos.
+
+3.Componentes BDI:
+
+-Creencias: habilidades del agente, estados de tareas, progreso, si una tarea está asignada o no.
+-Deseos: completar tareas, ayudar a otras, tomar tareas que coincidan con su habilidad.
+-Intenciones: acciones concretas como asignarse tareas, retomarlas, ayudarlas, completarlas y descansar.
+
+4.Limitaciones observadas:
+
+-No hay comunicación real entre agentes, solo logs.
+-No existe planificación a largo plazo, solo decisiones reactivas.
+-Podría haber condiciones de carrera si dos agentes evalúan una tarea en el mismo instante.
+-La fatiga es simple y no depende del tipo o dificultad de la tarea.
+-No hay negociación ni estrategia cooperativa avanzada entre agentes.
