@@ -1,34 +1,100 @@
 {
- "initialAgents": [
- { "id": "A1", "name": "Alice", "skill": "Frontend", "speed": 10,
-"tasksCompleted": 0 },
- { "id": "A2", "name": "Bob", "skill": "Backend", "speed": 12,
-"tasksCompleted": 0 },
- { "id": "A3", "name": "Charlie", "skill": "Fullstack", "speed": 8,
-"tasksCompleted": 0 }
- ],
- "initialTasks": [
- { "id": "T1", "name": "Diseñar interfaz de usuario", "skillRequired":
-"Frontend", "progress": 0, "totalWork": 100, "priority": "High" },
- { "id": "T2", "name": "Implementar API de autenticación", "skillRequired":
-"Backend", "progress": 0, "totalWork": 120, "priority": "High" },
- { "id": "T3", "name": "Optimizar base de datos", "skillRequired":
-"Backend", "progress": 0, "totalWork": 80, "priority": "Medium" },
- { "id": "T4", "name": "Crear componente de carrito", "skillRequired":
-"Frontend", "progress": 0, "totalWork": 90, "priority": "Medium" },
- { "id": "T5", "name": "Configurar servidor CI/CD", "skillRequired":
-"DevOps", "progress": 0, "totalWork": 150, "priority": "High" }
- ],
- "possibleTaskNames": [
- "Desarrollar módulo de pago", "Revisar código de seguridad", "Actualizar librerías",
- "Escribir pruebas unitarias", "Refactorizar estilos CSS", "Diseñar base de datos",
- "Implementar sistema de notificaciones", "Crear panel de administración",
- "Optimizar rendimiento web", "Resolver bug crítico", "Documentar API"
- ],
- "possibleAgentNames": [
- "David", "Eve", "Frank", "Grace", "Heidi", "Ivan", "Judy", "Karl", "Liam",
-"Mia"
- ],
- "possibleSkills": ["Frontend", "Backend", "Fullstack", "DevOps", "Testing",
-"UX/UI"]
+    "initialAgents": [
+        {
+            "id": "A1",
+            "name": "Alice",
+            "skill": "Frontend",
+            "speed": 10,
+            "tasksCompleted": 0
+        },
+        {
+            "id": "A2",
+            "name": "Bob",
+            "skill": "Backend",
+            "speed": 12,
+            "tasksCompleted": 0
+        },
+        {
+            "id": "A3",
+            "name": "Charlie",
+            "skill": "Fullstack",
+            "speed": 8,
+            "tasksCompleted": 0
+        }
+    ],
+    "initialTasks": [
+        {
+            "id": "T1",
+            "name": "Diseñar interfaz de usuario",
+            "skillRequired": "Frontend",
+            "progress": 0,
+            "totalWork": 100,
+            "priority": "High"
+        },
+        {
+            "id": "T2",
+            "name": "Implementar API de autenticación",
+            "skillRequired": "Backend",
+            "progress": 0,
+            "totalWork": 120,
+            "priority": "High"
+        },
+        {
+            "id": "T3",
+            "name": "Optimizar base de datos",
+            "skillRequired": "Backend",
+            "progress": 0,
+            "totalWork": 80,
+            "priority": "Medium"
+        },
+        {
+            "id": "T4",
+            "name": "Crear componente de carrito",
+            "skillRequired": "Frontend",
+            "progress": 0,
+            "totalWork": 90,
+            "priority": "Medium"
+        },
+        {
+            "id": "T5",
+            "name": "Configurar servidor CI/CD",
+            "skillRequired": "DevOps",
+            "progress": 0,
+            "totalWork": 150,
+            "priority": "High"
+        }
+    ],
+    "possibleTaskNames": [
+        "Desarrollar módulo de pago",
+        "Revisar código de seguridad",
+        "Actualizar librerías",
+        "Escribir pruebas unitarias",
+        "Refactorizar estilos CSS",
+        "Diseñar base de datos",
+        "Implementar sistema de notificaciones",
+        "Crear panel de administración",
+        "Optimizar rendimiento web",
+        "Resolver bug crítico",
+        "Documentar API"
+    ],
+    "possibleAgentNames": [
+        "David",
+        "Eve",
+        "Frank",
+        "Grace",
+        "Heidi",
+        "Ivan",
+        "Judy",
+        "Karl",
+        "Liam",
+        "Mia"
+    ],
+    "possibleSkills": [
+        "Frontend",
+        "Backend",
+        "Fullstack",
+        "DevOps",
+        "Testing",
+        "UX/UI"
+    ]
 }
