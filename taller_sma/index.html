@@ -1,0 +1,70 @@
+codeHtml
+<!DOCTYPE html>
+<html lang="es">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Simulador de Agentes de Tareas</title>
+ <link rel="stylesheet" href="style.css">
+</head>
+<body>
+ <header>
+ <h1>Simulador de Agentes de Tareas Colaborativas</h1>
+ <p>Observa cómo los agentes autónomos gestionan y completan tareas.</p>
+ </header>
+ <main>
+ <section id="agents-section">
+ <h2>Agentes Disponibles</h2>
+ <div id="agents-container" class="agent-grid">
+ <!-- Agentes se cargarán aquí -->
+ </div>
+ <button id="add-agent-btn">Añadir Agente Aleatorio</button>
+ </section>
+ <section id="tasks-section">
+ <h2>Tablero de Tareas</h2>
+ <div class="task-board">
+ <div class="task-column">
+ <h3>Pendientes (<span id="pending-count">0</span>)</h3>
+ <ul id="pending-tasks" class="task-list">
+ <!-- Tareas pendientes se cargarán aquí -->
+ </ul>
+ </div>
+ <div class="task-column">
+ <h3>En Progreso (<span id="in-progress-count">0</span>)</h3>
+ <ul id="in-progress-tasks" class="task-list">
+ <!-- Tareas en progreso se cargarán aquí -->
+ </ul>
+ </div>
+ <div class="task-column">
+ <h3>Completadas (<span id="completed-count">0</span>)</h3>
+ <ul id="completed-tasks" class="task-list">
+ <!-- Tareas completadas se cargarán aquí -->
+ </ul>
+ </div>
+ </div>
+ <button id="add-task-btn">Añadir Tarea Aleatoria</button>
+ <button id="reset-sim-btn">Reiniciar Simulación</button>
+ </section>
+ <section id="simulation-controls">
+ <h2>Controles de Simulación</h2>
+ <button id="start-sim-btn">Iniciar Simulación</button>
+ <button id="pause-sim-btn">Pausar Simulación</button>
+ <label for="sim-speed">Velocidad:</label>
+ <input type="range" id="sim-speed" min="100" max="2000" value="1000">
+ <span id="speed-value">1x</span>
+ </section>
+ <!-- Sección de Logs para la Mejora de Comunicación Explícita -->
+ <section id="logs-section" style="display: none;">
+ <h2>Registro de Actividad (Logs)</h2>
+ <div id="simulation-logs" style="height: 200px; overflow-y: scroll;
+border: 1px solid #ccc; padding: 10px; background-color: #f9f9f9;">
+ <!-- Aquí se mostrarán los mensajes de los agentes -->
+ </div>
+ </section>
+ </main>
+ <footer>
+ <p>Proyecto de Simulación de Sistemas Multiagente</p>
+ </footer>
+ <script src="script.js"></script>
+</body>
+</html>
