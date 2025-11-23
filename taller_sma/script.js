@@ -3,17 +3,20 @@ let agents = [];
 let tasks = [];
 let simulationInterval;
 let simulationSpeed = 1000; // ms
+
 // Constantes para estados de agentes y tareas
 const AGENT_STATUS = {
     FREE: 'free',
     BUSY: 'busy',
-    RESTING: 'resting' // Nuevo estado para la mejora de fatiga
+    RESTING: 'resting'
 };
+
 const TASK_STATUS = {
     PENDING: 'pending',
     IN_PROGRESS: 'in-progress',
     COMPLETED: 'completed'
 };
+
 // --- Elementos del DOM ---
 const agentsContainer = document.getElementById('agents-container');
 const pendingTasksList = document.getElementById('pending-tasks');
@@ -29,37 +32,43 @@ const startSimBtn = document.getElementById('start-sim-btn');
 const pauseSimBtn = document.getElementById('pause-sim-btn');
 const simSpeedInput = document.getElementById('sim-speed');
 const speedValueSpan = document.getElementById('speed-value');
-const simulationLogs = document.getElementById('simulation-logs'); // Para la mejora de logs
-const logsSection = document.getElementById('logs-section'); // Para mostrar/ocultar logs
-// --- Carga de Datos Iniciales desde data.json ---
+const simulationLogs = document.getElementById('simulation-logs');
+const logsSection = document.getElementById('logs-section');
+
+// --- Carga de Datos Iniciales ---
 let initialData = {};
+
 fetch('data.json')
     .then(response => response.json())
     .then(data => {
         initialData = data;
-        setInitialIds(); // Asegurarse de que los IDs se inicien correctamente
+        setInitialIds();
         initSimulation();
     })
     .catch(error => console.error('Error al cargar data.json:', error));
-// --- Funciones de Inicialización y Reseteo ---
+
+// --- Inicialización ---
 function initSimulation() {
-    // Clona los datos para no modificar los originales
     agents = initialData.initialAgents.map(a => ({
         ...a,
+        // HABILIDADES AHORA SON ARRAYS
+        skill: Array.isArray(a.skill) ? a.skill : [a.skill],
         status: AGENT_STATUS.FREE,
         currentTaskId: null,
-        restCycles: 0, // Para la mejora de fatiga
-        tasksCompleted: 0 // Para la mejora de fatiga
+        restCycles: 0,
+        tasksCompleted: 0
     }));
-    tasks = initialData.initialTasks.map(t => ({
-        ...t, status:
-            TASK_STATUS.PENDING, assignedTo: null
-    }));
-    // Limpiar logs al reiniciar
-    if (simulationLogs) simulationLogs.innerHTML = '';
 
+    tasks = initialData.initialTasks.map(t => ({
+        ...t,
+        status: TASK_STATUS.PENDING,
+        assignedTo: null
+    }));
+
+    if (simulationLogs) simulationLogs.innerHTML = '';
     updateUI();
 }
+
 function resetSimulation() {
     clearInterval(simulationInterval);
     simulationInterval = null;
@@ -68,208 +77,299 @@ function resetSimulation() {
     pauseSimBtn.disabled = true;
     initSimulation();
 }
-// --- Funciones de Renderizado de UI ---
+
+// --- Renderizado ---
 function renderAgents() {
     agentsContainer.innerHTML = '';
     agents.forEach(agent => {
         const agentCard = document.createElement('div');
         agentCard.className = 'agent-card';
         agentCard.innerHTML = `
- <h4>${agent.name} (${agent.id})</h4>
- <p>Habilidad: <strong>${Array.isArray(agent.skill) ?
-                agent.skill.join(', ') : agent.skill}</strong></p>
- <p>Estado: <span class="agent-status ${agent.status}">
- ${agent.status === AGENT_STATUS.FREE ? 'Libre' :
-                agent.status === AGENT_STATUS.BUSY ? `Ocupado
-(${agent.currentTaskId})` :
-                    `Descansando (${agent.restCycles})`}
- </span></p>
- <p>Velocidad: ${agent.speed} U/ciclo</p>
- ${agent.tasksCompleted !== undefined ? `<p>Tareas Completadas:
-${agent.tasksCompleted}</p>` : ''}
- `;
+            <h4>${agent.name} (${agent.id})</h4>
+            <p>Habilidad: <strong>${agent.skill.join(', ')}</strong></p>
+            <p>Estado: <span class="agent-status ${agent.status}">
+                ${
+                    agent.status === AGENT_STATUS.FREE
+                        ? 'Libre'
+                        : agent.status === AGENT_STATUS.BUSY
+                        ? `Ocupado (${agent.currentTaskId})`
+                        : `Descansando (${agent.restCycles})`
+                }
+            </span></p>
+            <p>Velocidad: ${agent.speed} U/ciclo</p>
+            <p>Tareas Completadas: ${agent.tasksCompleted}</p>
+        `;
         agentsContainer.appendChild(agentCard);
     });
 }
+
 function renderTasks() {
     pendingTasksList.innerHTML = '';
     inProgressTasksList.innerHTML = '';
     completedTasksList.innerHTML = '';
-    let pendingCount = 0;
-    let inProgressCount = 0;
-    let completedCount = 0;
+
+    let pending = 0, progress = 0, done = 0;
+
     tasks.forEach(task => {
-        const taskItem = document.createElement('li');
-        taskItem.className = `task-item priority-${task.priority.toLowerCase()}`;
-        taskItem.innerHTML = `
- <h4>${task.name} (${task.id})</h4>
- <p>Habilidad Requerida: <strong>${task.skillRequired}</strong></p>
- <p>Progreso: ${task.progress.toFixed(0)}%</p>
- <p>Asignado a: ${task.assignedTo || 'Nadie'}</p>
- <div class="progress-bar-container">
- <div class="progress-bar" style="width:
-${task.progress}%;"></div>
- </div>
- `;
+        const item = document.createElement('li');
+        item.className = `task-item priority-${task.priority.toLowerCase()}`;
+        item.innerHTML = `
+            <h4>${task.name} (${task.id})</h4>
+            <p>Habilidad Requerida: <strong>${task.skillRequired}</strong></p>
+            <p>Progreso: ${task.progress.toFixed(0)}%</p>
+            <p>Asignado a: ${task.assignedTo || 'Nadie'}</p>
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width:${task.progress}%;"></div>
+            </div>
+        `;
+
         if (task.status === TASK_STATUS.PENDING) {
-            pendingTasksList.appendChild(taskItem);
-            pendingCount++;
+            pendingTasksList.appendChild(item);
+            pending++;
         } else if (task.status === TASK_STATUS.IN_PROGRESS) {
-            inProgressTasksList.appendChild(taskItem);
-            inProgressCount++;
+            inProgressTasksList.appendChild(item);
+            progress++;
         } else {
-            completedTasksList.appendChild(taskItem);
-            completedCount++;
+            completedTasksList.appendChild(item);
+            done++;
         }
     });
-    pendingCountSpan.textContent = pendingCount;
-    inProgressCountSpan.textContent = inProgressCount;
-    completedCountSpan.textContent = completedCount;
+
+    pendingCountSpan.textContent = pending;
+    inProgressCountSpan.textContent = progress;
+    completedCountSpan.textContent = done;
 }
+
 function updateUI() {
     renderAgents();
     renderTasks();
 }
-// --- Lógica del Sistema Multiagente (¡Aquí es donde los alumnos trabajarán!) -
---
-    function agentCycle() {
-        agents.forEach(agent => {
-            // --- LÓGICA DE FATIGA (MEJORA OPCIONAL) ---
-            // Si el agente está descansando, decrementa su contador de descanso y salta el resto de la lógica.
-            if (agent.status === AGENT_STATUS.RESTING) {
-                agent.restCycles--;
-                if (agent.restCycles <= 0) {
-                    agent.status = AGENT_STATUS.FREE;
-                    logAction(agent.name, 'ha terminado de descansar y está libre.');
-                }
-                return; // El agente descansando no hace nada más este ciclo
+
+// --- Lógica Multiagente ---
+function agentCycle() {
+    agents.forEach(agent => {
+
+        // ================================
+        // FATIGA (YA ESTABA IMPLEMENTADO)
+        // ================================
+        if (agent.status === AGENT_STATUS.RESTING) {
+            agent.restCycles--;
+            if (agent.restCycles <= 0) {
+                agent.status = AGENT_STATUS.FREE;
+                logAction(agent.name, 'ha terminado de descansar.');
             }
-            if (agent.status === AGENT_STATUS.FREE) {
-                // Agente en estado LIBRE: Busca una tarea
-                // TODO: Los alumnos deben mejorar esta sección para implementar la
-                "Política de Priorización de Tareas Mejorada"
-                // y la lógica de "Ayuda/Colaboración Simple".
-                // BDI Simplificado (estado actual):
-                // Creencias: Agente libre, conoce tareas pendientes, sus habilidades.
-                // Deseos: Quiere completar una tarea.
-                // Intenciones: Buscar la mejor tarea disponible.
-                const availableTasks = tasks.filter(t =>
-                    t.status === TASK_STATUS.PENDING &&
-                    (Array.isArray(agent.skill) ?
-                        agent.skill.includes(t.skillRequired) : t.skillRequired === agent.skill ||
-                        agent.skill === 'Fullstack')
-                ).sort((a, b) => {
-                    // Prioridad actual: Tareas de alta prioridad primero, luego por
-                    dificultad(totalWork)
-                    const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-                    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+            return;
+        }
+
+        // =====================
+        // AGENTE LIBRE
+        // =====================
+        if (agent.status === AGENT_STATUS.FREE) {
+
+            // ----------------------------------
+            // MEJORA 3 — COLABORACIÓN / AYUDA
+            // ----------------------------------
+
+            // 3A - Tareas abandonadas con ≥75%
+            const helpTasks = tasks.filter(t =>
+                t.status === TASK_STATUS.IN_PROGRESS &&
+                t.assignedTo === null &&
+                t.progress >= t.totalWork * 0.75 &&
+                agent.skill.includes(t.skillRequired)
+            );
+
+            if (helpTasks.length > 0) {
+                const task = helpTasks[0];
+                task.assignedTo = agent.name;
+                agent.currentTaskId = task.id;
+                agent.status = AGENT_STATUS.BUSY;
+                logAction(agent.name, `está ayudando con una tarea casi terminada: ${task.name}`);
+                return;
+            }
+
+            // 3B - Tareas grandes
+            const bigTasks = tasks.filter(t =>
+                t.status === TASK_STATUS.PENDING &&
+                t.totalWork > 150 &&
+                agent.skill.includes(t.skillRequired)
+            );
+
+            if (bigTasks.length > 0) {
+                const task = bigTasks[0];
+                task.status = TASK_STATUS.IN_PROGRESS;
+                task.assignedTo = agent.name;
+                agent.currentTaskId = task.id;
+                agent.status = AGENT_STATUS.BUSY;
+                logAction(agent.name, `ha tomado una tarea grande: ${task.name}`);
+                return;
+            }
+
+            // ----------------------------------
+            // MEJORA 1 — PRIORIZACIÓN MEJORADA
+            // ----------------------------------
+
+            // 1A — Retomar tareas abandonadas
+            const abandoned = tasks.filter(t =>
+                t.status === TASK_STATUS.IN_PROGRESS &&
+                t.assignedTo === null &&
+                agent.skill.includes(t.skillRequired)
+            );
+
+            if (abandoned.length > 0) {
+                const task = abandoned[0];
+                task.assignedTo = agent.name;
+                agent.currentTaskId = task.id;
+                agent.status = AGENT_STATUS.BUSY;
+                logAction(agent.name, `ha retomado una tarea abandonada: ${task.name}`);
+                return;
+            }
+
+            // 1B — Afinidad EXACTA de habilidades
+            let matchTasks = tasks.filter(t =>
+                t.status === TASK_STATUS.PENDING &&
+                agent.skill.includes(t.skillRequired)
+            );
+
+            matchTasks.sort((a, b) => {
+                const priorityOrder = { High: 3, Medium: 2, Low: 1 };
+                if (priorityOrder[a.priority] !== priorityOrder[b.priority])
+                    return priorityOrder[b.priority] - priorityOrder[a.priority];
+                return a.totalWork - b.totalWork;
+            });
+
+            if (matchTasks.length > 0) {
+                const task = matchTasks[0];
+                task.status = TASK_STATUS.IN_PROGRESS;
+                task.assignedTo = agent.name;
+                agent.currentTaskId = task.id;
+                agent.status = AGENT_STATUS.BUSY;
+                logAction(agent.name, `ha tomado una tarea acorde a su habilidad: ${task.name}`);
+                return;
+            }
+
+            // 1C — Si es Fullstack, tomar cualquier tarea pendiente
+            if (agent.skill.includes("Fullstack")) {
+                let fallback = tasks.filter(t => t.status === TASK_STATUS.PENDING);
+
+                fallback.sort((a, b) => {
+                    const priorityOrder = { High: 3, Medium: 2, Low: 1 };
+                    if (priorityOrder[a.priority] !== priorityOrder[b.priority])
                         return priorityOrder[b.priority] - priorityOrder[a.priority];
-                        // Mayor prioridad primero
-                    }
-                    return a.totalWork - b.totalWork; // Menos trabajo primero
+                    return a.totalWork - b.totalWork;
                 });
-                if (availableTasks.length > 0) {
-                    const taskToTake = availableTasks[0]; // Toma la tarea de mayor prioridad/menor trabajo
-                    taskToTake.status = TASK_STATUS.IN_PROGRESS;
-                    taskToTake.assignedTo = agent.name;
+
+                if (fallback.length > 0) {
+                    const task = fallback[0];
+                    task.status = TASK_STATUS.IN_PROGRESS;
+                    task.assignedTo = agent.name;
+                    agent.currentTaskId = task.id;
                     agent.status = AGENT_STATUS.BUSY;
-                    agent.currentTaskId = taskToTake.id;
-                    logAction(agent.name, `ha tomado la tarea: ${taskToTake.name}`);
-                    // Para la mejora de logs
+                    logAction(agent.name, `ha tomado una tarea como Fullstack flexible: ${task.name}`);
+                    return;
                 }
-            } else if (agent.status === AGENT_STATUS.BUSY && agent.currentTaskId) {
-                // Agente en estado OCUPADO: Trabaja en su tarea actual
-                const currentTask = tasks.find(t => t.id === agent.currentTaskId);
-                if (currentTask) {
-                    currentTask.progress += agent.speed;
-                    if (currentTask.progress >= currentTask.totalWork) {
-                        currentTask.progress = 100; // Asegura que el progreso no exceda 100
-                        currentTask.status = TASK_STATUS.COMPLETED;
-                        agent.status = AGENT_STATUS.FREE;
-                        agent.currentTaskId = null;
-                        agent.tasksCompleted = (agent.tasksCompleted || 0) + 1; //Incrementa contador para la mejora de fatiga
-                        logAction(agent.name, `ha COMPLETADO la tarea:
-${currentTask.name}`); // Para la mejora de logs
-                        // --- LÓGICA DE FATIGA (MEJORA OPCIONAL) ---
-                        // Si ha completado suficientes tareas, que descanse
-                        const FATIGUE_THRESHOLD = 3; // Número de tareas antes de
-                        descansar
-                        const REST_CYCLES = 5; // Ciclos de simulación para descansar
-                        if (agent.tasksCompleted >= FATIGUE_THRESHOLD) {
-                            agent.status = AGENT_STATUS.RESTING;
-                            agent.restCycles = REST_CYCLES;
-                            agent.tasksCompleted = 0; // Reiniciar contador de tareas
-                            completadas
-                            logAction(agent.name, `ha completado ${FATIGUE_THRESHOLD}
-tareas y ahora está descansando por ${REST_CYCLES} ciclos.`);
-                        }
-                    }
-                } else {
-                    // Caso excepcional: La tarea asignada no existe (ej. fue eliminada)
+            }
+        }
+
+        // =====================
+        // AGENTE OCUPADO
+        // =====================
+        if (agent.status === AGENT_STATUS.BUSY && agent.currentTaskId) {
+            const task = tasks.find(t => t.id === agent.currentTaskId);
+
+            if (task) {
+                task.progress += agent.speed;
+                if (task.progress >= task.totalWork) {
+                    task.progress = 100;
+                    task.status = TASK_STATUS.COMPLETED;
+                    logAction(agent.name, `ha COMPLETADO la tarea: ${task.name}`);
                     agent.status = AGENT_STATUS.FREE;
                     agent.currentTaskId = null;
-                    logAction(agent.name, 'su tarea asignada ya no existe, volviendo al estado libre.'); // Para la mejora de logs
+                    agent.tasksCompleted++;
+
+                    // Fatiga
+                    if (agent.tasksCompleted >= 3) {
+                        agent.status = AGENT_STATUS.RESTING;
+                        agent.restCycles = 5;
+                        agent.tasksCompleted = 0;
+                        logAction(agent.name, `está descansando por fatiga.`);
+                    }
                 }
+            } else {
+                agent.status = AGENT_STATUS.FREE;
+                agent.currentTaskId = null;
             }
-        });
-        updateUI(); // Actualiza la interfaz después de cada ciclo de agentes
-    }
-// --- Funciones para Añadir Agentes/Tareas Dinámicamente ---
+        }
+    });
+
+    updateUI();
+}
+
+// --- Crear agentes aleatorios ---
 let nextAgentId = 0;
+
 function getNextAgentId() {
     return `A${++nextAgentId}`;
 }
-let nextTaskId = 0;
-function getNextTaskId() {
-    return `T${++nextTaskId}`;
-}
+
 function addRandomAgent() {
-    const randomName = initialData.possibleAgentNames[Math.floor(Math.random() *
-        initialData.possibleAgentNames.length)];
-    // TODO: Los alumnos pueden modificar esta parte para la mejora de "Agentes con Múltiples Habilidades"
-    const randomSkill = initialData.possibleSkills[Math.floor(Math.random() *
-        initialData.possibleSkills.length)];
-    const randomSpeed = Math.floor(Math.random() * (15 - 5 + 1)) + 5; // Velocidad entre 5 y 15
+    const name = initialData.possibleAgentNames[Math.floor(Math.random() * initialData.possibleAgentNames.length)];
+
+    // MULTI-HABILIDADES
+    const numSkills = Math.floor(Math.random() * 3) + 1;
+    let randomSkill = [];
+    for (let i = 0; i < numSkills; i++) {
+        const skill = initialData.possibleSkills[Math.floor(Math.random() * initialData.possibleSkills.length)];
+        if (!randomSkill.includes(skill)) randomSkill.push(skill);
+    }
+
+    const speed = Math.floor(Math.random() * 11) + 5;
+
     const newAgent = {
         id: getNextAgentId(),
-        name: randomName,
+        name,
         skill: randomSkill,
-        speed: randomSpeed,
+        speed,
         status: AGENT_STATUS.FREE,
         currentTaskId: null,
         restCycles: 0,
         tasksCompleted: 0
     };
+
     agents.push(newAgent);
     updateUI();
-    logAction('Sistema', `Se ha añadido un nuevo agente: ${newAgent.name}
-(${newAgent.skill}).`);
+    logAction('Sistema', `Agente añadido: ${newAgent.name} (${newAgent.skill.join(', ')})`);
 }
+
+// --- Crear tareas ---
+let nextTaskId = 0;
+
+function getNextTaskId() {
+    return `T${++nextTaskId}`;
+}
+
 function addRandomTask() {
-    const randomName = initialData.possibleTaskNames[Math.floor(Math.random() *
-        initialData.possibleTaskNames.length)];
-    const randomSkillRequired =
-        initialData.possibleSkills[Math.floor(Math.random() *
-            initialData.possibleSkills.length)];
-    const randomTotalWork = Math.floor(Math.random() * (200 - 50 + 1)) + 50; //Trabajo entre 50 y 200
-    const randomPriority = ['Low', 'Medium', 'High'][Math.floor(Math.random() *
-        3)];
+    const name = initialData.possibleTaskNames[Math.floor(Math.random() * initialData.possibleTaskNames.length)];
+    const skillRequired = initialData.possibleSkills[Math.floor(Math.random() * initialData.possibleSkills.length)];
+    const totalWork = Math.floor(Math.random() * 151) + 50;
+    const priority = ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)];
+
     const newTask = {
         id: getNextTaskId(),
-        name: randomName,
-        skillRequired: randomSkillRequired,
+        name,
+        skillRequired,
         progress: 0,
-        totalWork: randomTotalWork,
-        priority: randomPriority,
+        totalWork,
+        priority,
         status: TASK_STATUS.PENDING,
         assignedTo: null
     };
+
     tasks.push(newTask);
     updateUI();
-    logAction('Sistema', `Se ha añadido una nueva tarea: ${newTask.name}
-(Prioridad: ${newTask.priority}).`);
+    logAction('Sistema', `Nueva tarea añadida: ${newTask.name} (${newTask.priority})`);
 }
-// --- Control de la Simulación ---
+
+// --- Control de Simulación ---
 function startSimulation() {
     if (!simulationInterval) {
         simulationInterval = setInterval(agentCycle, simulationSpeed);
@@ -277,10 +377,10 @@ function startSimulation() {
         startSimBtn.disabled = true;
         pauseSimBtn.disabled = false;
         logAction('Sistema', 'Simulación iniciada.');
-        // Mostrar la sección de logs cuando la simulación inicie (si se implementa)
-        if (logsSection) logsSection.style.display = 'block';
+        logsSection.style.display = 'block';
     }
 }
+
 function pauseSimulation() {
     clearInterval(simulationInterval);
     simulationInterval = null;
@@ -289,52 +389,49 @@ function pauseSimulation() {
     startSimBtn.textContent = 'Reanudar Simulación';
     logAction('Sistema', 'Simulación pausada.');
 }
+
 function updateSimulationSpeed() {
     simulationSpeed = parseInt(simSpeedInput.value);
     const speedFactor = (2000 / simulationSpeed).toFixed(1);
     speedValueSpan.textContent = `${speedFactor}x`;
     if (simulationInterval) {
-        pauseSimulation(); // Pausa para aplicar la nueva velocidad
+        pauseSimulation();
         startSimulation();
     }
 }
-// --- Función para la mejora de "Comunicación Explícita (Logs)" ---
+
+// --- Logs ---
 function logAction(actor, message) {
     if (simulationLogs) {
         const timestamp = new Date().toLocaleTimeString();
         const logEntry = document.createElement('p');
-        logEntry.innerHTML = `<strong>[${timestamp}] ${actor}:</strong>
-${message}`;
-        simulationLogs.prepend(logEntry); // Añadir al principio para ver lo más
-        reciente
-        // Limitar el número de logs para evitar desbordamiento
+        logEntry.innerHTML = `<strong>[${timestamp}] ${actor}:</strong> ${message}`;
+        simulationLogs.prepend(logEntry);
+
         if (simulationLogs.children.length > 50) {
             simulationLogs.removeChild(simulationLogs.lastChild);
         }
     }
 }
-// --- Event Listeners ---
+
+// --- Listeners ---
 addAgentBtn.addEventListener('click', addRandomAgent);
 addTaskBtn.addEventListener('click', addRandomTask);
 resetSimBtn.addEventListener('click', resetSimulation);
 startSimBtn.addEventListener('click', startSimulation);
 pauseSimBtn.addEventListener('click', pauseSimulation);
 simSpeedInput.addEventListener('input', updateSimulationSpeed);
-// Inicializar IDs para las funciones de añadir dinámicamente
+
+// --- IDs iniciales ---
 function setInitialIds() {
-    // Busca el ID numérico más alto en los agentes iniciales y lo usa como base
     if (initialData.initialAgents.length > 0) {
-        nextAgentId = Math.max(...initialData.initialAgents.map(a =>
-            parseInt(a.id.substring(1)))) || 0;
+        nextAgentId = Math.max(...initialData.initialAgents.map(a => parseInt(a.id.substring(1)))) || 0;
     }
-    // Busca el ID numérico más alto en las tareas iniciales y lo usa como base
     if (initialData.initialTasks.length > 0) {
-        nextTaskId = Math.max(...initialData.initialTasks.map(t =>
-            parseInt(t.id.substring(1)))) || 0;
+        nextTaskId = Math.max(...initialData.initialTasks.map(t => parseInt(t.id.substring(1)))) || 0;
     }
 }
-// Deshabilitar el botón de pausa al inicio
+
 pauseSimBtn.disabled = true;
 speedValueSpan.textContent = `${(2000 / simSpeedInput.value).toFixed(1)}x`;
-// Ocultar la sección de logs por defecto
-if (logsSection) logsSection.style.display = 'none';
+logsSection.style.display = 'none';

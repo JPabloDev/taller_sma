@@ -3,25 +3,26 @@
         {
             "id": "A1",
             "name": "Alice",
-            "skill": "Frontend",
+            "skill": ["Frontend", "UX/UI"],
             "speed": 10,
             "tasksCompleted": 0
         },
         {
             "id": "A2",
             "name": "Bob",
-            "skill": "Backend",
+            "skill": ["Backend", "DevOps"],
             "speed": 12,
             "tasksCompleted": 0
         },
         {
             "id": "A3",
             "name": "Charlie",
-            "skill": "Fullstack",
+            "skill": ["Fullstack", "Frontend", "Backend"],
             "speed": 8,
             "tasksCompleted": 0
         }
     ],
+
     "initialTasks": [
         {
             "id": "T1",
@@ -64,6 +65,7 @@
             "priority": "High"
         }
     ],
+
     "possibleTaskNames": [
         "Desarrollar módulo de pago",
         "Revisar código de seguridad",
@@ -77,6 +79,7 @@
         "Resolver bug crítico",
         "Documentar API"
     ],
+
     "possibleAgentNames": [
         "David",
         "Eve",
@@ -89,6 +92,7 @@
         "Liam",
         "Mia"
     ],
+
     "possibleSkills": [
         "Frontend",
         "Backend",
